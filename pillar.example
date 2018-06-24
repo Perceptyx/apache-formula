@@ -4,32 +4,9 @@ apache:
   # By default apache restart/reload states run (false skips)
   manage_service_states: True
 
-  # lookup section overrides ``map.jinja`` values
-  lookup:
-    server: apache2
-    service: apache2
-    user: some_system_user
-    group: some_system_group
-
-    vhostdir: /etc/apache2/sites-available
-    confdir: /etc/apache2/conf.d
-    confext: .conf
-    logdir: /var/log/apache2
-    wwwdir: /srv/apache2
-
-    # apache version (generally '2.2' or '2.4')
-    version: '2.2'
-
-    # ``apache.mod_wsgi`` formula additional configuration:
-    mod_wsgi: mod_wsgi
-
-    # Default value for AddDefaultCharset in RedHat configuration
-    default_charset: 'UTF-8'
-
   global:
     # global apache directives
     AllowEncodedSlashes: 'On'
-
 
   name_virtual_hosts:
     - interface: '*'
@@ -91,7 +68,7 @@ apache:
 
     redirectmatch.com:
       # Use RedirectMatch Directive https://httpd.apache.org/docs/2.4/fr/mod/mod_alias.html#redirectmatch
-      # Require module mod_alias 
+      # Require module mod_alias
       enabled: True
       template_file: salt://apache/vhosts/redirect.tmpl
       ServerName: www.redirectmatch.com
@@ -345,4 +322,3 @@ apache:
     SSLProtocol: all -SSLv2 -SSLv3 -TLSv1
     SSLHonorCipherOrder: On
     SSLOptions: "+StrictRequire"
-
