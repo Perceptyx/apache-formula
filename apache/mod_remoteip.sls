@@ -30,10 +30,8 @@ a2enconf remoteip:
       - pkg: apache
     - watch_in:
       - service: apache
-{% endif %}
 
-
-{% if grains['os_family']=="RedHat" %}
+{% elif grains['os_family']=="RedHat" %}
 
 include:
   - apache
@@ -47,5 +45,21 @@ include:
       - pkg: apache
     - watch_in:
       - service: apache
+
+{% elif grains['os_family']=="FreeBSD" %}
+
+include:
+  - apache
+
+{{ apache.modulesdir }}/050_mod_remoteip.conf:
+  file.managed:
+    - source: 
+      - salt://apache/files/{{ salt['grains.get']('os_family') }}/mod_remoteip.conf.jinja
+    - mode: 644
+    - template: jinja
+    - require:
+      - pkg: apache
+    - watch_in:
+      - module: apache-restart
 
 {% endif %}

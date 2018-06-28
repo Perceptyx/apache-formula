@@ -1,9 +1,9 @@
 {% from "apache/map.jinja" import apache with context %}
 ## This file is managed using salt. Your changes will be lost.
 ##
-## module file for mod_perl
+## module file for mod_wsgi
 ##
-## PROVIDE: mod_perl
+## PROVIDE: mod_wsgi
 ## REQUIRE:
 
-LoadModule perl_module libexec/{{ apache.service }}/mod_perl.so
+LoadModule perl_module libexec/{{ apache.service }}/mod_wsgi.so

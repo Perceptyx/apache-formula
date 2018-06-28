@@ -94,11 +94,16 @@
         'user': 'www',
         'group': 'www',
         'configfile': '/usr/local/etc/apache24/httpd.conf',
-        'portsfile': '/usr/local/etc/apache24/ports.conf',
+        'portsfile': '/usr/local/etc/apache24/Includes/ports-2.4.conf',
 
-        'mod_php5': 'mod_php56',
+        'mod_php5': 'mod_php72',
         'mod_perl2': 'ap24-mod_perl2',
-        'mod_wsgi': 'ap24-mod_wsgi3',
+        'mod_wsgi': 'ap24-py36-mod_wsgi4',
+        'mod_xsendfile': 'ap24-mod_xsendfile',
+        'mod_fcgid': 'ap24-mod_fcgid',
+        'mod_pagespeed': 'ap24-mod_pagespeed',
+        'mod_xsendfile': 'ap24-mod_xsendfile',
+        'mod_fastcgi': 'ap24-mod_fastcgi',
 
         'vhostdir': '/usr/local/etc/apache24/Includes',
         'confdir': '/usr/local/etc/apache24/extra',
@@ -108,7 +113,7 @@
         'confext': '',
         'default_site': 'default',
         'default_site_ssl': 'default-ssl',
-        'logdir': '/var/log/',
+        'logdir': '/var/log/apache',
         'wwwdir': '/usr/local/www/apache24/',
     },
     'Arch': {

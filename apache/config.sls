@@ -72,6 +72,16 @@ include:
 {% endif %}
 
 {% if grains['os_family']=="FreeBSD" %}
+
+{{ apache.logdir }}:
+  file.directory:
+    - makedirs: True
+    - mode: 750
+    - user: {{ apache.user }}
+    - group: {{ apache.group }}
+    - require:
+      - pkg: apache
+
 /usr/local/etc/{{ apache.service }}/envvars.d/by_salt.env:
   file.managed:
     - template: jinja
@@ -79,6 +89,7 @@ include:
       - salt://apache/files/{{ salt['grains.get']('os_family') }}/envvars-{{ apache.version }}.jinja
     - require:
       - pkg: apache
+      - {{ apache.logdir }}
     - watch_in:
       - service: apache
 
@@ -89,8 +100,10 @@ include:
       - salt://apache/files/{{ salt['grains.get']('os_family') }}/ports-{{ apache.version }}.conf.jinja
     - require:
       - pkg: apache
+      - {{ apache.logdir }}
     - watch_in:
       - service: apache
     - context:
       apache: {{ apache }}
+
 {% endif %}

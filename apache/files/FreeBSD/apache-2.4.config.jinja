@@ -1,4 +1,8 @@
 #
+# This file is managed by Salt! Do not edit by hand!
+#   
+{% from "apache/map.jinja" import apache with context %}
+#
 # This is the main Apache HTTP server configuration file.  It contains the
 # configuration directives that give the server its instructions.
 # See <URL:http://httpd.apache.org/docs/2.4/> for detailed information.
@@ -28,7 +32,7 @@
 # same ServerRoot for multiple httpd daemons, you will need to change at
 # least PidFile.
 #
-ServerRoot "/usr/local"
+ServerRoot {{ salt['pillar.get']('apache:serverroot', '/usr/local') }}
 
 #
 # Mutex: Allows you to set the mutex mechanism and mutex file directory
@@ -169,8 +173,6 @@ LoadModule alias_module libexec/apache24/mod_alias.so
 # Third party modules
 IncludeOptional etc/apache24/modules.d/[0-9][0-9][0-9]_*.conf
  
-Include {{ apache.portsfile }}
-
 <IfModule unixd_module>
 #
 # If you wish httpd to run as a different user or group, you must run
@@ -180,8 +182,8 @@ Include {{ apache.portsfile }}
 # It is usually good practice to create a dedicated user and group for
 # running httpd, as with most system services.
 #
-User www
-Group www
+User ${APACHE_RUN_USER}
+Group ${APACHE_RUN_GROUP}
 
 </IfModule>
 
@@ -202,7 +204,7 @@ Group www
 # e-mailed.  This address appears on some server-generated pages, such
 # as error documents.  e.g. admin@your-domain.com
 #
-ServerAdmin root@localhost
+ServerAdmin {{ salt['pillar.get']('apache:serveradmin', '"root@localhost"') }}
 
 #
 # ServerName gives the name and port that the server uses to identify itself.
@@ -293,7 +295,7 @@ DocumentRoot "{{ apache.global_document_root }}"
 # logged here.  If you *do* define an error logfile for a <VirtualHost>
 # container, that host's errors will be logged there and not here.
 #
-ErrorLog "/var/log/httpd-error.log"
+ErrorLog "/var/log/apache/httpd-error.log"
 
 #
 # LogLevel: Control the number of messages logged to the error_log.
@@ -307,8 +309,15 @@ LogLevel warn
     # The following directives define some format nicknames for use with
     # a CustomLog directive (see below).
     #
+    LogFormat "%v:%p %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
     LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
     LogFormat "%h %l %u %t \"%r\" %>s %b" common
+    LogFormat "%{Referer}i -> %U" referer
+    LogFormat "%{User-agent}i" agent
+    {%- for log_format in salt['pillar.get']('apache:log_formats', []) %}
+    LogFormat {{ log_format }}
+    {%- endfor %}
+
 
     <IfModule logio_module>
       # You need to enable mod_logio.c to use %I and %O
@@ -322,13 +331,13 @@ LogLevel warn
     # define per-<VirtualHost> access logfiles, transactions will be
     # logged therein and *not* in this file.
     #
-    CustomLog "/var/log/httpd-access.log" common
+    CustomLog "/var/log/apache/httpd-access.log" common
 
     #
     # If you prefer a logfile with access, agent, and referer information
     # (Combined Logfile Format) you can use the following directive.
     #
-    #CustomLog "/var/log/httpd-access.log" combined
+    #CustomLog "/var/log/apache/httpd-access.log" combined
 </IfModule>
 
 <IfModule alias_module>

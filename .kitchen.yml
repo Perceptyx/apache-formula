@@ -4,11 +4,34 @@ formula = YAML.load_file('FORMULA')
 formula_name = formula['name']
 %>
 ---
+
 driver:
   name: docker
   use_sudo: false
   privileged: true
   require_chef_omnibus: false
+
+provisioner:
+  name: salt_solo
+  salt_bootstrap_url: https://bootstrap.saltstack.com
+  salt_install: bootstrap
+  salt_bootstrap_options: -X git v2017.7.5
+  salt_version: '2017.7.5'
+  formula: <%= formula_name %>
+  require_chef: false
+  data_path: test/shared
+  log_level: <%= ENV['SALT_DEBUG_LEVEL'] || 'debug' %>
+  pillars-from-files:
+    <%= formula_name %>.sls: pillar.example
+  pillars:
+    top.sls:
+      base:
+        '*':
+          - <%= formula_name %>
+  state_top:
+    base:
+      '*':
+        - <%= formula_name %>
 
 platforms:
   - name: centos-7
@@ -20,39 +43,9 @@ platforms:
       hostname: freebsd.ci.local
       cache_directory: false
 
-provisioner:
-  name: salt_solo
-  formula: <%= formula_name %>
-  require_chef: false
-  data_path: test/shared
-  pillars:
-    top.sls:
-      base:
-        '*':
-          - <%= formula_name %>
-    <%= formula_name %>.sls:
-      apache:
-        manage_service_states: false
-        mod_security:
-          crs_install: true
-          manage_config: true
-          sec_rule_engine: 'On'
-          sec_request_body_access: 'On'
-          sec_request_body_limit: '14000000'
-          sec_request_body_no_files_limit: '114002'
-          sec_request_body_in_memory_limit: '114002'
-          sec_request_body_limit_action: 'Reject'
-          sec_pcre_match_limit: '15000'
-          sec_pcre_match_limit_recursion: '15000'
-          sec_debug_log_level: '3'
-
 suites:
   - name: default
-    provisioner:
-      state_top:
-        base:
-          '*':
-            - <%= formula_name %>
+
   - name: apache_norestart
     provisioner:
       state_top:
@@ -62,8 +55,9 @@ suites:
       pillars:
         apache.sls:
           apache:
-            manage_service_states: False
-  - name: complete
+            manage_service_states: false
+
+  - name: bsd
     excludes:
       - name: centos-7
       - name: ubuntu-16.04
@@ -76,135 +70,3 @@ suites:
             - <%= formula_name %>.config
             - <%= formula_name %>.mod_info
             - <%= formula_name %>.modules
-      #pillars-from-files:
-      #  <%= formula_name %>.sls: pillar.example
-      pillars:
-        apache.sls:
-          apache:
-            global:
-              Timeout: 300
-              KeepAlive: 'On'
-              MaxKeepAliveRequests: 100
-              KeepAliveTimeout: 5
-              UseCanonicalName: 'Off'
-
-            security:
-              HostnameLookups: 'Off'
-              # ServerRoot "/usr/local"
-              Listen: 8080
-
-              ServerAdmin: 'support@perceptyx.com'
-              ServerName: pepe.perceptyx.com
-              DocumentRoot: '/usr/local/www/perceptyx/data'
-              Directory:
-                /:
-                  AllowOverride: None
-                  Require: all denied
-
-                  sites:
-                    example.net:
-                      template_file: salt://apache/vhosts/minimal.tmpl
-
-                    example.com: #
-                      enabled: True
-                      template_file: salt://apache/vhosts/standard.tmpl # or minimal.tmpl or redirect.tmpl or proxy.tmpl
-
-                      ServerName: popo.example.com # uses the unique ID above unless specified
-                      #ServerAlias: www.example.com # Do not add ServerAlias unless defined
-
-                      ServerAdmin: webmaster@example.com
-
-                      LogLevel: warn
-                      ErrorLog: /path/to/logs/example.com-error.log # E.g.: /var/log/apache2/example.com-error.log
-                      CustomLog: /path/to/logs/example.com-access.log # E.g.: /var/log/apache2/example.com-access.log
-
-                      DocumentRoot: /path/to/www/dir/example.com # E.g., /var/www/example.com
-
-                      SSLCertificateFile: /etc/ssl/mycert.pem # if ssl is desired
-                      SSLCertificateKeyFile: /etc/ssl/mycert.pem.key # if key for cert is needed or in an extra file
-                      SSLCertificateChainFile: /etc/ssl/mycert.chain.pem # if you require a chain of server certificates file
-
-                      Directory:
-                        # "default" is a special case; Adds ``/path/to/www/dir/example.com``
-                        # E.g.: /var/www/example.com
-                        default:
-                          Options: -Indexes +FollowSymLinks
-                          Order: allow,deny    # For Apache < 2.4
-                          Allow: from all      # For apache < 2.4
-                          Require: all granted # For apache > 2.4.
-                          AllowOverride: None
-                          Formula_Append: |
-                            Additional config as a
-                            multi-line string here
-
-
-              Directory:
-                /usr/local/www/perceptyx/data:
-                  Options: FollowSymLinks ExecCGI
-                  PerlResponseHandler: ModPerl::Registry
-                  AllowOverride: None
-                  Require: all granted
-
-
-              DirectoryIndex: index.html index.cgi
-              ErrorLog: "|/usr/local/sbin/cronolog -l /var/log/apache/error.log /var/log/apache/error.log.%Y-%m-%d"
-              LogLevel: warn
-              LogFormat: "%a %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
-              LogFormat: "%a %l %u %t \"%r\" %>s %b" common
-              LogFormat: "%a %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
-              CustomLog: |
-                "|/usr/local/sbin/cronolog -l /var/log/apache/access.log /var/log/apache/access.log.%Y-%m-%d" combined
-
-              ScriptAlias:
-                /cgi-bin/: "/usr/local/www/apache22/cgi-bin/"
-
-              Directory:
-                /usr/local/www/apache22/cgi-bin:
-                  AllowOverride: None
-                  Options: None
-                  Require: all granted
-
-              DefaultType: text/plain
-
-              TypesConfig: etc/apache24/mime.types
-              # Verificar mime.types
-                  # AddType application/x-compress .Z
-                  # AddType application/x-gzip .gz .tgz
-
-                  # AddHandler perl-script .cgi
-              # Multi-language error messages
-              # gzip output
-              #AddOutputFilterByType DEFLATE application/x-javascript application/xml text/css text/html text/plain text/xml
-
-              # ImageMagick needs it
-              #SetEnv PATH "/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin"
-              #SetEnv HTMLDOC_NOCGI yes
-
-              #PerlPostConfigRequire etc/apache22/startup.pl
-              # Limit max size of process. See startup.pl
-              #PerlCleanupHandler Apache2::SizeLimit
-
-              #PerlChildInitHandler "sub { srand }"
-
-              # Core dump in case of server crash for more debugging
-              CoreDumpDirectory: /tmp
-
-              ListenBacklog: 4096
-          # apache:
-          #   manage_service_states: false
-          #   mod_info:
-          #     require_ip:
-          #       - 164.73.32.2
-          #     require_host:
-          #       - somename.com
-          #   modules:
-          #     enabled:
-          #       - log_config
-          #       - remoteip
-          #       - usertrack
-          #       - unique_id
-          #       - macro
-          #     disabled:
-          #       - reflector
-          #       - xml2enc
-          #       - headers
