@@ -1,6 +1,9 @@
 {% from "apache/map.jinja" import apache with context %}
 
+<IfModule mod_remoteip.c>
 RemoteIPHeader {{ salt['pillar.get']('apache:mod_remoteip:RemoteIPHeader', 'X-Forwarded-For') }}
-{%- for trusted_proxy in salt['pillar.get']('apache:mod_remoteip:RemoteIPTrustedProxy', []) %}
-RemoteIPTrustedProxy {{ trusted_proxy }}
-{%- endfor %}
+{%- set proxy_list = salt['pillar.get']('apache:mod_remoteip:RemoteIPTrustedProxy', []) %}
+{%- if proxy_list is defined %}
+RemoteIPTrustedProxy {{ proxy_list | join(' ') }}
+{%- endif %}
+</IfModule>

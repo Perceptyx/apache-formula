@@ -7,3 +7,9 @@
 ## REQUIRE:
 
 LoadModule perl_module libexec/{{ apache.service }}/mod_perl.so
+
+<IfModule mod_perl.c>
+  {%- for directive, dvalue in salt['pillar.get']('apache:mod_perl2', {}).items() %}
+  {{ directive }} {{ dvalue }}
+  {%- endfor %}
+</IfModule>

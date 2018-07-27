@@ -45,6 +45,45 @@ ServerRoot {{ salt['pillar.get']('apache:serverroot', '/usr/local') }}
 # Mutex default:/var/run
 
 #
+# Listen: Allows you to bind Apache to specific IP addresses and/or
+# ports, instead of the default. See also the <VirtualHost>
+# directive.
+#
+# Change this to Listen on specific IP addresses as shown below to
+# prevent Apache from glomming onto all bound IP addresses.
+#
+#Listen 12.34.56.78:80
+#
+{% if salt['pillar.get']('apache:sites') is mapping %}
+    {%- set listen_directives = [] %}
+    {%- for id, site in salt['pillar.get']('apache:sites').items() %}
+        {%- set interfaces = site.get('interface', '*').split() %}
+        {%- set port = site.get('port', 80) %}
+        {%- for interface in interfaces %}
+            {%- if not site.get('exclude_listen_directive', False) %}
+                {%- set listen_directive = interface ~ ':' ~ port %}
+                {%- if listen_directive not in listen_directives %}
+                    {%- do listen_directives.append(listen_directive) %}
+                {%- endif %}
+            {%- endif %}
+        {%- endfor %}
+    {%- endfor %}
+    {%- for listen in listen_directives %}
+Listen  {{ listen }}
+    {%- endfor %}
+{%- else %}
+Listen 80
+
+<IfModule mod_ssl.c>
+    Listen 443
+</IfModule>
+
+<IfModule mod_gnutls.c>
+    Listen 443
+</IfModule>
+{%- endif %}
+
+#
 # Dynamic Shared Object (DSO) Support
 #
 # To be able to use the functionality of a module which was built as a DSO you
@@ -237,6 +276,13 @@ ServerAdmin {{ salt['pillar.get']('apache:serveradmin', '"root@localhost"') }}
 {%- endfor %}
 
 {% if apache.global_document_root is defined and apache.global_document_root|length > 0 %}
+
+<IfModule env_module>
+{%- for envvar,envvalue in salt['pillar.get']('apache:setenv', {}).items() %}
+SetEnv {{ envvar }} {{ envvalue }}
+{%- endfor %}
+</IfModule>
+
 #
 # DocumentRoot: The directory out of which you will serve your
 # documents. By default, all requests are taken from this directory, but
@@ -437,6 +483,11 @@ LogLevel warn
     #
     #AddType text/html .shtml
     #AddOutputFilter INCLUDES .shtml
+
+    # Adding custom handler here
+    {%- for handler in salt['pillar.get']('apache:mime_module:add_handler') %}
+    AddHandler {{ handler }}
+    {%- endfor %}
 </IfModule>
 
 #

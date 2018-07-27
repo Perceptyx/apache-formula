@@ -13,10 +13,11 @@
 # with the URL of http://servername/server-status
 # Change the ".example.com" to match your domain to enable.
 
-<Location /server-status>
+<Location {{ salt['pillar.get']('apache:mod_info:server_info:location', '/server-status') }}>
     SetHandler server-status
-    Require host .example.com
-    Require ip 127
+{%- for required in salt['pillar.get']('apache:mod_status:server_status:require', ['ip 127.0.0.1']) %}
+    Require {{ required }}
+{%- endfor %}
 </Location>
 
 #
@@ -25,19 +26,19 @@
 # Off) when the "server-status" handler is called. The default is Off.
 #
 #ExtendedStatus On
+{%- if salt['pillar.get']('apache:mod_info:server_status:extended', False) %}
+ExtendedStatus On
+{%- endif %}
 
 #
 # Allow remote server configuration reports, with the URL of
 #  http://servername/server-info (requires that mod_info.c be loaded).
 # Change the ".example.com" to match your domain to enable.
 #
-<Location /server-info>
+<Location {{ salt['pillar.get']('apache:mod_info:server_info:location', '/server-info') }}>
     SetHandler server-info
-{%- for host in salt['pillar.get']('apache:mod_info:require_host', []) %}
-    Require host {{ host }}
-{%- endfor %}
-{%- for ip_addr in salt['pillar.get']('apache:mod_info:require_ip', ['127.0.0.1']) %}
-    Require ip {{ ip_addr }}
+{%- for required in salt['pillar.get']('apache:mod_info:server_info:require', ['ip 127.0.0.1']) %}
+    Require {{ required }}
 {%- endfor %}
 </Location>
 
