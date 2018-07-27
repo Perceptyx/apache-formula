@@ -314,13 +314,16 @@ apache:
     SSLProtocol: all -SSLv2 -SSLv3 -TLSv1
     SSLHonorCipherOrder: On
     SSLOptions: "+StrictRequire"
-  # mod info setup
-  mod_info:
+  # mod status setup
+  mod_status:
     require_ip:
       - 164.73.32.2
     require_host:
       - somename.com
 
+  mod_perl2:
+    PerlCleanupHandler: 'Apache2::SizeLimit'
+    PerlChildInitHandler: '"sub { srand }"'
   # Enable/disable Apache modules
   modules:
     enabled:
