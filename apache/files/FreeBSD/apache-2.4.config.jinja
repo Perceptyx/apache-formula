@@ -72,14 +72,14 @@ ServerRoot {{ salt['pillar.get']('apache:serverroot', '/usr/local') }}
 Listen  {{ listen }}
     {%- endfor %}
 {%- else %}
-Listen 80
+Listen {{ salt['pillar.get']('apache:global:Listen', '80')  }}
 
 <IfModule mod_ssl.c>
-    Listen 443
+    Listen {{ salt['pillar.get']('apache:global:ListenSSL', '443') }}
 </IfModule>
 
 <IfModule mod_gnutls.c>
-    Listen 443
+    Listen {{ salt['pillar.get']('apache:global:ListenSSL', '443') }}
 </IfModule>
 {%- endif %}
 
