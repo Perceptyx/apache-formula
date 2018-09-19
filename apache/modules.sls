@@ -87,7 +87,7 @@ include:
   - apache
 
 {% for module in salt['pillar.get']('apache:modules:enabled', []) %}
-sed -ie 's/\(^#\)\(\s*LoadModule.{{ module }}_module\)/\2/g' {{ apache.configfile }}:
+sed -i -e 's/\(^#\)\(\s*LoadModule.{{ module }}_module\)/\2/g' {{ apache.configfile }}:
   cmd.run:
     - unless: httpd -M 2> /dev/null | grep "[[:space:]]{{ module }}_module"
     - order: 225
@@ -101,7 +101,7 @@ sed -ie 's/\(^#\)\(\s*LoadModule.{{ module }}_module\)/\2/g' {{ apache.configfil
 {% endfor %}
 
 {% for module in salt['pillar.get']('apache:modules:disabled', []) %}
-sed -ie 's/\(^\s*LoadModule.{{ module }}_module\)/#\1/g' {{ apache.configfile }}:
+sed -i -e 's/\(^\s*LoadModule.{{ module }}_module\)/#\1/g' {{ apache.configfile }}:
   cmd.run:
     - onlyif: httpd -M 2> /dev/null | grep "[[:space:]]{{ module }}_module"
     - order: 225
