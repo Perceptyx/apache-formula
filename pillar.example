@@ -3,6 +3,11 @@ apache:
   # By default apache restart/reload states run (false skips)
   manage_service_states: True
 
+  # Change global listen ports
+  # if you are not using vhosts
+  listen: 8080
+  listenSSL: 8443
+
   global:
     # global apache directives
     AllowEncodedSlashes: 'On'

@@ -72,14 +72,14 @@ ServerRoot {{ salt['pillar.get']('apache:serverroot', '/usr/local') }}
 Listen  {{ listen }}
     {%- endfor %}
 {%- else %}
-Listen {{ salt['pillar.get']('apache:global:Listen', '80')  }}
+Listen {{ salt['pillar.get']('apache:listen', '80')  }}
 
 <IfModule mod_ssl.c>
-    Listen {{ salt['pillar.get']('apache:global:ListenSSL', '443') }}
+    Listen {{ salt['pillar.get']('apache:listenSSL', '443') }}
 </IfModule>
 
 <IfModule mod_gnutls.c>
-    Listen {{ salt['pillar.get']('apache:global:ListenSSL', '443') }}
+    Listen {{ salt['pillar.get']('apache:listenSSL', '443') }}
 </IfModule>
 {%- endif %}
 
@@ -253,6 +253,9 @@ ServerAdmin {{ salt['pillar.get']('apache:serveradmin', '"root@localhost"') }}
 # If your host doesn't have a registered DNS name, enter its IP address here.
 #
 #ServerName www.example.com:80
+{% if defined salt['pillar.get']('apache:servername') %}
+ServerName {{ salt['pillar.get']('apache:servername') }}
+{% endif %}
 
 #
 # Deny access to the entirety of your server's filesystem. You must
@@ -272,10 +275,7 @@ ServerAdmin {{ salt['pillar.get']('apache:serveradmin', '"root@localhost"') }}
 #
 
 {%- for directive, dvalue in salt['pillar.get']('apache:global', {}).items() %}
-{# Exclude Listen directives, that will go into another place #}
-{%- if not (directive == "Listen" or directive == "ListenSSL") %}
 {{ directive }} {{ dvalue }}
-{%- endif %}
 {%- endfor %}
 
 {% if apache.global_document_root is defined and apache.global_document_root|length > 0 %}
