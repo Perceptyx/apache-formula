@@ -7,7 +7,7 @@ include:
 
 {{ apache.confdir }}/httpd-info.conf:
   file.managed:
-    - source: 
+    - source:
       - salt://apache/files/{{ salt['grains.get']('os_family') }}/mod_status.conf.jinja
     - mode: 644
     - template: jinja
@@ -15,7 +15,7 @@ include:
       - pkg: apache
 
 # Uncomment inclusion in configfile
-sed -ie 's,\(^#\)\(\s*Include.etc/apache24/extra/httpd-info.conf\),\2,g' {{ apache.configfile }}:
+sed -i -e 's,\(^#\)\(\s*Include.etc/apache24/extra/httpd-info.conf\),\2,g' {{ apache.configfile }}:
   cmd.run:
     - unless: grep -q "[[:space:]]Include.etc/apache24/extra/httpd-info.conf" {{ apache.configfile }}
     - order: 225
