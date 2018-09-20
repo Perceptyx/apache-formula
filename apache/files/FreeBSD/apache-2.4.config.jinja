@@ -272,7 +272,8 @@ ServerAdmin {{ salt['pillar.get']('apache:serveradmin', '"root@localhost"') }}
 #
 
 {%- for directive, dvalue in salt['pillar.get']('apache:global', {}).items() %}
-{%- if directive != "Listen" or directive != "ListenSSL" %}
+{# Exclude Listen directives, that will go into another place #}
+{%- if not (directive == "Listen" or directive == "ListenSSL") %}
 {{ directive }} {{ dvalue }}
 {%- endif %}
 {%- endfor %}
