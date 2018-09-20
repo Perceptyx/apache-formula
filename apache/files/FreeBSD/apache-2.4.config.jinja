@@ -321,6 +321,7 @@ DocumentRoot "{{ apache.global_document_root }}"
 </Directory>
 {% endif %}
 
+
 #
 # DirectoryIndex: sets the file that Apache will serve if a directory
 # is requested.
@@ -429,6 +430,13 @@ LogLevel warn
     #
     #Scriptsock cgisock
 </IfModule>
+
+# Safe Sane default
+<Directory "/">
+    AllowOverride None
+    Options None
+    Require all denied
+</Directory>
 
 #
 # "/usr/local/www/apache24/cgi-bin" should be changed to whatever your ScriptAliased
