@@ -253,7 +253,7 @@ ServerAdmin {{ salt['pillar.get']('apache:serveradmin', '"root@localhost"') }}
 # If your host doesn't have a registered DNS name, enter its IP address here.
 #
 #ServerName www.example.com:80
-{% if defined salt['pillar.get']('apache:servername') %}
+{% if salt['pillar.get']('apache:servername', False) -%}
 ServerName {{ salt['pillar.get']('apache:servername') }}
 {% endif %}
 
