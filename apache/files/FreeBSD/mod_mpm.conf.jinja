@@ -1,0 +1,88 @@
+{% from "apache/map.jinja" import apache with context %}
+## This file is managed using salt. Your changes will be lost.
+##
+{%- set mpm_param = salt['pillar.get']('apache:mpm:params', {}) %}
+
+#
+# Server-Pool Management (MPM specific)
+#
+
+#
+# PidFile: The file in which the server should record its process
+# identification number when it starts.
+#
+# Note that this is the default PidFile for most MPMs.
+#
+<IfModule !mpm_netware_module>
+    PidFile "/var/run/httpd.pid"
+</IfModule>
+
+#
+# Only one of the below sections will be relevant on your
+# installed httpd.  Use "apachectl -l" to find out the
+# active mpm.
+#
+
+# prefork MPM
+# StartServers: number of server processes to start
+# MinSpareServers: minimum number of server processes which are kept spare
+# MaxSpareServers: maximum number of server processes which are kept spare
+# MaxRequestWorkers: maximum number of server processes allowed to start
+# MaxConnectionsPerChild: maximum number of connections a server process serves
+#                         before terminating
+<IfModule mpm_prefork_module>
+    StartServers {{ mpm_param['start_servers'] | d('5') }}
+    MinSpareServers {{ mpm_param['min_spare_servers'] | d('5') }}
+    MaxSpareServers {{ mpm_param['max_spare_servers'] | d('10') }}
+    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d('250') }}
+{%- if mpm_param['max_request_workers'] | d('150') >= 256 %}
+    ServerLimit {{ mpm_param['max_request_workers'] | d('150') }}
+{%- endif %}
+    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d('0') }}
+</IfModule>
+
+# worker MPM
+# StartServers: initial number of server processes to start
+# MinSpareThreads: minimum number of worker threads which are kept spare
+# MaxSpareThreads: maximum number of worker threads which are kept spare
+# ThreadsPerChild: constant number of worker threads in each server process
+# MaxRequestWorkers: maximum number of worker threads
+# MaxConnectionsPerChild: maximum number of connections a server process serves
+#                         before terminating
+<IfModule mpm_worker_module>
+    StartServers {{ mpm_param['start_servers'] | d('3') }}
+    MinSpareThreads {{ mpm_param['min_spare_threads'] | d('75') }}
+    MaxSpareThreads {{ mpm_param['max_spare_threads'] | d('250') }}
+    ThreadsPerChild {{ mpm_param['threads_per_child'] | d('25') }}
+    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d('400') }}
+    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d('0') }}
+</IfModule>
+
+# event MPM
+# StartServers: initial number of server processes to start
+# MinSpareThreads: minimum number of worker threads which are kept spare
+# MaxSpareThreads: maximum number of worker threads which are kept spare
+# ThreadsPerChild: constant number of worker threads in each server process
+# MaxRequestWorkers: maximum number of worker threads
+# MaxConnectionsPerChild: maximum number of connections a server process serves
+#                         before terminating
+<IfModule mpm_event_module>
+    StartServers {{ mpm_param['start_servers'] | d('3') }}
+    MinSpareThreads {{ mpm_param['min_spare_threads'] | d('75') }}
+    MaxSpareThreads {{ mpm_param['max_spare_threads'] | d('250') }}
+    ThreadLimit {{ mpm_param['thread_limit'] | d('64') }}
+    ThreadsPerChild {{ mpm_param['threads_per_child'] | d('25') }}
+    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d('400') }}
+    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d('0') }}
+</IfModule>
+
+# The maximum number of free Kbytes that every allocator is allowed
+# to hold without calling free(). In threaded MPMs, every thread has its own
+# allocator. When not set, or when set to zero, the threshold will be set to
+# unlimited.
+<IfModule !mpm_netware_module>
+    MaxMemFree            2048
+</IfModule>
+<IfModule mpm_netware_module>
+    MaxMemFree             100
+</IfModule>

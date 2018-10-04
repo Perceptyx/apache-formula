@@ -179,9 +179,9 @@ LoadModule version_module libexec/apache24/mod_version.so
 #LoadModule lbmethod_bytraffic_module libexec/apache24/mod_lbmethod_bytraffic.so
 #LoadModule lbmethod_bybusyness_module libexec/apache24/mod_lbmethod_bybusyness.so
 #LoadModule lbmethod_heartbeat_module libexec/apache24/mod_lbmethod_heartbeat.so
-#LoadModule mpm_event_module libexec/apache24/mod_mpm_event.so
-LoadModule mpm_prefork_module libexec/apache24/mod_mpm_prefork.so
-#LoadModule mpm_worker_module libexec/apache24/mod_mpm_worker.so
+{% set mpm_module = salt['pillar.get']('apache:mpm:module', 'mpm_prefork') %}
+LoadModule {{ mpm_module }}_module libexec/apache24/mod_{{ mpm_module }}.so
+
 LoadModule unixd_module libexec/apache24/mod_unixd.so
 #LoadModule heartbeat_module libexec/apache24/mod_heartbeat.so
 #LoadModule heartmonitor_module libexec/apache24/mod_heartmonitor.so

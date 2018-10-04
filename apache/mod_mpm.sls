@@ -35,4 +35,16 @@ a2dismod {{ mod }}:
       - module: apache-restart
 {% endfor %}
 
+{% elif grains['os_family']=="FreeBSD" %}
+
+{{ apache.modulesdir }}/httpd-mpm.conf:
+  file.managed:
+    - source: salt://apache/files/{{ salt['grains.get']('os_family') }}/mod_mpm.conf.jinja
+    - mode: 644
+    - template: jinja
+    - require:
+      - pkg: apache
+    - watch_in:
+      - module: apache-restart
+
 {% endif %}

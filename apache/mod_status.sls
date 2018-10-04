@@ -15,7 +15,7 @@ include:
       - pkg: apache
 
 # Uncomment inclusion in configfile
-sed -i -e 's,\(^#\)\(\s*Include.etc/apache24/extra/httpd-info.conf\),\2,g' {{ apache.configfile }}:
+sed -i'.salt' -e 's,\(^#\)\(\s*Include.etc/apache24/extra/httpd-info.conf\),\2,g' {{ apache.configfile }}:
   cmd.run:
     - unless: grep -q "[[:space:]]Include.etc/apache24/extra/httpd-info.conf" {{ apache.configfile }}
     - order: 225
