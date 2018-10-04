@@ -1,5 +1,6 @@
-{% if grains['os_family']=="Debian" %}
 {% from "apache/map.jinja" import apache with context %}
+
+{% if grains['os_family']=="Debian" %}
 {% set mpm_module = salt['pillar.get']('apache:mpm:module', 'mpm_prefork') %}
 
 include:
@@ -37,7 +38,21 @@ a2dismod {{ mod }}:
 
 {% elif grains['os_family']=="FreeBSD" %}
 
-{{ apache.modulesdir }}/httpd-mpm.conf:
+#Include etc/apache24/extra/httpd-mpm.conf
+
+# Uncomment inclusion in configfile
+sed -i'.salt' -e 's,\(^#\)\(\s*Include.etc/apache24/extra/httpd-mpm.conf\),\2,g' {{ apache.configfile }}:
+  cmd.run:
+    - unless: grep -q "[[:space:]]Include.etc/apache24/extra/httpd-mpm.conf" {{ apache.configfile }}
+    - order: 225
+    - require:
+      - pkg: apache
+      - {{ apache.confdir }}/httpd-mpm.conf
+      - {{ apache.configfile }}
+    - watch_in:
+      - module: apache-restart
+
+{{ apache.confdir }}/httpd-mpm.conf:
   file.managed:
     - source: salt://apache/files/{{ salt['grains.get']('os_family') }}/mod_mpm.conf.jinja
     - mode: 644

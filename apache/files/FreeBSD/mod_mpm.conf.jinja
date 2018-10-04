@@ -1,6 +1,6 @@
-{% from "apache/map.jinja" import apache with context %}
 ## This file is managed using salt. Your changes will be lost.
 ##
+{%- from "apache/map.jinja" import apache with context %}
 {%- set mpm_param = salt['pillar.get']('apache:mpm:params', {}) %}
 
 #

@@ -21,6 +21,7 @@ sed -i'.salt' -e 's,\(^#\)\(\s*Include.etc/apache24/extra/httpd-info.conf\),\2,g
     - order: 225
     - require:
       - pkg: apache
+      - {{ apache.confdir }}/httpd-info.conf
       - {{ apache.configfile }}
     - watch_in:
       - module: apache-restart
