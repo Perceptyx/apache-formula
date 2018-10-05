@@ -3,7 +3,11 @@
 <IfModule mod_remoteip.c>
 RemoteIPHeader {{ salt['pillar.get']('apache:mod_remoteip:RemoteIPHeader', 'X-Forwarded-For') }}
 {%- set proxy_list = salt['pillar.get']('apache:mod_remoteip:RemoteIPTrustedProxy', []) %}
-{%- if proxy_list is defined %}
+{%- if proxy_list is defined and proxy_list %}
 RemoteIPTrustedProxy {{ proxy_list | join(' ') }}
+{%- endif %}
+{%- set internal_proxy_list = salt['pillar.get']('apache:mod_remoteip:RemoteIPInternalProxy', []) %}
+{%- if internal_proxy_list is defined and internal_proxy_list %}
+RemoteIPInternalProxy {{ internal_proxy_list | join(' ') }}
 {%- endif %}
 </IfModule>
