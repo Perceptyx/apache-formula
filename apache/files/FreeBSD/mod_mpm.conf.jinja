@@ -35,9 +35,6 @@
     MinSpareServers {{ mpm_param['min_spare_servers'] | d('5') }}
     MaxSpareServers {{ mpm_param['max_spare_servers'] | d('10') }}
     MaxRequestWorkers {{ mpm_param['max_request_workers'] | d('250') }}
-{%- if mpm_param['max_request_workers'] | d('150') >= 256 %}
-    ServerLimit {{ mpm_param['max_request_workers'] | d('150') }}
-{%- endif %}
     MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d('0') }}
 </IfModule>
 
