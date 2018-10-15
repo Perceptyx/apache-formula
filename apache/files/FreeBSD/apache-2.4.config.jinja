@@ -592,11 +592,11 @@ SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 </IfModule>
 
-# Default Values
-ServerTokens Prod
-ServerSignature Off
-TraceEnable Off
-# Well, IncludeOptional behaved lile Include
+# Secure Default Values
+ServerTokens {{ salt['pillar.get']('apache:security:ServerTokens', 'Prod') }}
+ServerSignature {{ salt['pillar.get']('apache:security:ServerSignature', 'Off') }}
+TraceEnable {{ salt['pillar.get']('apache:security:TraceEnable', 'Off') }}
+# IncludeOptional behaves like Include, but won't bail if the file isn't there.
 IncludeOptional etc/apache24/extra/security.con[f]
 
 {% if salt['pillar.get']('apache:mod_ssl:manage_tls_defaults', False) -%}
