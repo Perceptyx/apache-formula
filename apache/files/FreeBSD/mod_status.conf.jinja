@@ -13,7 +13,7 @@
 # with the URL of http://servername/server-status
 # Change the ".example.com" to match your domain to enable.
 
-<Location {{ salt['pillar.get']('apache:mod_info:server_info:location', '/server-status') }}>
+<Location {{ salt['pillar.get']('apache:mod_status:server_info:location', '/server-status') }}>
     SetHandler server-status
 {%- for required in salt['pillar.get']('apache:mod_status:server_status:require', ['ip 127.0.0.1']) %}
     Require {{ required }}
@@ -26,7 +26,7 @@
 # Off) when the "server-status" handler is called. The default is Off.
 #
 #ExtendedStatus On
-{%- if salt['pillar.get']('apache:mod_info:server_status:extended', False) %}
+{%- if salt['pillar.get']('apache:mod_status:server_status:extended', False) %}
 ExtendedStatus On
 {%- endif %}
 
@@ -35,9 +35,9 @@ ExtendedStatus On
 #  http://servername/server-info (requires that mod_info.c be loaded).
 # Change the ".example.com" to match your domain to enable.
 #
-<Location {{ salt['pillar.get']('apache:mod_info:server_info:location', '/server-info') }}>
+<Location {{ salt['pillar.get']('apache:mod_status:server_info:location', '/server-info') }}>
     SetHandler server-info
-{%- for required in salt['pillar.get']('apache:mod_info:server_info:require', ['ip 127.0.0.1']) %}
+{%- for required in salt['pillar.get']('apache:mod_status:server_info:require', ['ip 127.0.0.1']) %}
     Require {{ required }}
 {%- endfor %}
 </Location>
