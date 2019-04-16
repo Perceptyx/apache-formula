@@ -345,7 +345,7 @@ DocumentRoot "{{ apache.global_document_root }}"
 # logged here.  If you *do* define an error logfile for a <VirtualHost>
 # container, that host's errors will be logged there and not here.
 #
-ErrorLog "/var/log/apache/httpd-error.log"
+ErrorLog {{ salt['pillar.get']('apache:errorlog', '/var/log/apache/httpd-error.log') }}
 
 #
 # LogLevel: Control the number of messages logged to the error_log.
