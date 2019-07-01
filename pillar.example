@@ -1,35 +1,16 @@
 # ``apache`` formula configuration:
 apache:
-
   # By default apache restart/reload states run (false skips)
   manage_service_states: True
 
-  # lookup section overrides ``map.jinja`` values
-  lookup:
-    server: apache2
-    service: apache2
-    user: some_system_user
-    group: some_system_group
-
-    vhostdir: /etc/apache2/sites-available
-    confdir: /etc/apache2/conf.d
-    confext: .conf
-    logdir: /var/log/apache2
-    wwwdir: /srv/apache2
-
-    # apache version (generally '2.2' or '2.4')
-    version: '2.2'
-
-    # ``apache.mod_wsgi`` formula additional configuration:
-    mod_wsgi: mod_wsgi
-
-    # Default value for AddDefaultCharset in RedHat configuration
-    default_charset: 'UTF-8'
+  # Change global listen ports
+  # if you are not using vhosts
+  listen: 8080
+  listenSSL: 8443
 
   global:
     # global apache directives
     AllowEncodedSlashes: 'On'
-
 
   name_virtual_hosts:
     - interface: '*'
@@ -91,7 +72,7 @@ apache:
 
     redirectmatch.com:
       # Use RedirectMatch Directive https://httpd.apache.org/docs/2.4/fr/mod/mod_alias.html#redirectmatch
-      # Require module mod_alias 
+      # Require module mod_alias
       enabled: True
       template_file: salt://apache/vhosts/redirect.tmpl
       ServerName: www.redirectmatch.com
@@ -277,13 +258,6 @@ apache:
       #defaults:
       #  custom_var: "default value"
 
-  modules:
-    enabled:  # List modules to enable
-      - ldap
-      - ssl
-    disabled:  # List modules to disable
-      - rewrite
-
   # KeepAlive: Whether or not to allow persistent connections (more than
   # one request per connection). Set to "Off" to deactivate.
   keepalive: 'On'
@@ -345,4 +319,26 @@ apache:
     SSLProtocol: all -SSLv2 -SSLv3 -TLSv1
     SSLHonorCipherOrder: On
     SSLOptions: "+StrictRequire"
+  # mod status setup
+  mod_status:
+    require_ip:
+      - 164.73.32.2
+    require_host:
+      - somename.com
 
+  mod_perl2:
+    PerlCleanupHandler: 'Apache2::SizeLimit'
+    PerlChildInitHandler: '"sub { srand }"'
+  # Enable/disable Apache modules
+  modules:
+    enabled:
+      - log_config
+      - logio
+      - remoteip
+      - usertrack
+      - unique_id
+      - macro
+    disabled:
+      - reflector
+      - xml2enc
+      - headers

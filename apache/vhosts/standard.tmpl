@@ -55,7 +55,11 @@
 
     {% if site.get('LogLevel') != False -%}LogLevel {{ vals.LogLevel }}{% endif %}
     {% if site.get('ErrorLog') != False -%}ErrorLog {{ vals.ErrorLog }}{% endif %}
-    {% if site.get('LogFormat') != False -%}LogFormat {{ vals.LogFormat }}{% endif %}
+    {% if site.get('LogFormat') != False -%}
+    <IfModule logio_module>
+        LogFormat {{ vals.LogFormat }}
+    </IfModule>
+    {% endif %}
     {% if site.get('CustomLog') != False -%}CustomLog {{ vals.CustomLog }}  {{ vals.LogFormat }}{% endif %}
 
     {% if site.get('DocumentRoot') != False -%}DocumentRoot {{ vals.DocumentRoot }}{% endif %}

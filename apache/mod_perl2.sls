@@ -24,7 +24,7 @@ a2enmod perl2:
 
 {{ apache.modulesdir }}/260_mod_perl.conf:
   file.managed:
-    - source: salt://apache/files/{{ salt['grains.get']('os_family') }}/mod_perl.conf.jinja
+    - source: salt://apache/files/{{ salt['grains.get']('os_family') }}/mod_perl2.conf.jinja
     - mode: 644
     - template: jinja
     - require:

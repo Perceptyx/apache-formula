@@ -1,21 +1,25 @@
 #
+# This file is managed by Salt! Do not edit by hand!
+#
+{% from "apache/map.jinja" import apache with context %}
+#
 # This is the main Apache HTTP server configuration file.  It contains the
 # configuration directives that give the server its instructions.
 # See <URL:http://httpd.apache.org/docs/2.4/> for detailed information.
-# In particular, see 
+# In particular, see
 # <URL:http://httpd.apache.org/docs/2.4/mod/directives.html>
 # for a discussion of each configuration directive.
 #
 # Do NOT simply read the instructions in here without understanding
 # what they do.  They're here only as hints or reminders.  If you are unsure
-# consult the online docs. You have been warned.  
+# consult the online docs. You have been warned.
 #
 # Configuration and logfile names: If the filenames you specify for many
 # of the server's control files begin with "/" (or "drive:/" for Win32), the
 # server will use that explicit path.  If the filenames do *not* begin
 # with "/", the value of ServerRoot is prepended -- so "logs/access_log"
 # with ServerRoot set to "/usr/local/apache2" will be interpreted by the
-# server as "/usr/local/apache2/logs/access_log", whereas "/logs/access_log" 
+# server as "/usr/local/apache2/logs/access_log", whereas "/logs/access_log"
 # will be interpreted as '/logs/access_log'.
 
 #
@@ -28,7 +32,7 @@
 # same ServerRoot for multiple httpd daemons, you will need to change at
 # least PidFile.
 #
-ServerRoot "/usr/local"
+ServerRoot {{ salt['pillar.get']('apache:serverroot', '/usr/local') }}
 
 #
 # Mutex: Allows you to set the mutex mechanism and mutex file directory
@@ -39,6 +43,45 @@ ServerRoot "/usr/local"
 # other reason.
 #
 # Mutex default:/var/run
+
+#
+# Listen: Allows you to bind Apache to specific IP addresses and/or
+# ports, instead of the default. See also the <VirtualHost>
+# directive.
+#
+# Change this to Listen on specific IP addresses as shown below to
+# prevent Apache from glomming onto all bound IP addresses.
+#
+#Listen 12.34.56.78:80
+#
+{% if salt['pillar.get']('apache:sites') is mapping %}
+    {%- set listen_directives = [] %}
+    {%- for id, site in salt['pillar.get']('apache:sites').items() %}
+        {%- set interfaces = site.get('interface', '*').split() %}
+        {%- set port = site.get('port', 80) %}
+        {%- for interface in interfaces %}
+            {%- if not site.get('exclude_listen_directive', False) %}
+                {%- set listen_directive = interface ~ ':' ~ port %}
+                {%- if listen_directive not in listen_directives %}
+                    {%- do listen_directives.append(listen_directive) %}
+                {%- endif %}
+            {%- endif %}
+        {%- endfor %}
+    {%- endfor %}
+    {%- for listen in listen_directives %}
+Listen  {{ listen }}
+    {%- endfor %}
+{%- else %}
+Listen {{ salt['pillar.get']('apache:listen', '80')  }}
+
+<IfModule mod_ssl.c>
+    Listen {{ salt['pillar.get']('apache:listenSSL', '443') }}
+</IfModule>
+
+<IfModule mod_gnutls.c>
+    Listen {{ salt['pillar.get']('apache:listenSSL', '443') }}
+</IfModule>
+{%- endif %}
 
 #
 # Dynamic Shared Object (DSO) Support
@@ -136,9 +179,9 @@ LoadModule version_module libexec/apache24/mod_version.so
 #LoadModule lbmethod_bytraffic_module libexec/apache24/mod_lbmethod_bytraffic.so
 #LoadModule lbmethod_bybusyness_module libexec/apache24/mod_lbmethod_bybusyness.so
 #LoadModule lbmethod_heartbeat_module libexec/apache24/mod_lbmethod_heartbeat.so
-#LoadModule mpm_event_module libexec/apache24/mod_mpm_event.so
-LoadModule mpm_prefork_module libexec/apache24/mod_mpm_prefork.so
-#LoadModule mpm_worker_module libexec/apache24/mod_mpm_worker.so
+{% set mpm_module = salt['pillar.get']('apache:mpm:module', 'mpm_prefork') %}
+LoadModule {{ mpm_module }}_module libexec/apache24/mod_{{ mpm_module }}.so
+
 LoadModule unixd_module libexec/apache24/mod_unixd.so
 #LoadModule heartbeat_module libexec/apache24/mod_heartbeat.so
 #LoadModule heartmonitor_module libexec/apache24/mod_heartmonitor.so
@@ -168,20 +211,18 @@ LoadModule alias_module libexec/apache24/mod_alias.so
 
 # Third party modules
 IncludeOptional etc/apache24/modules.d/[0-9][0-9][0-9]_*.conf
- 
-Include {{ apache.portsfile }}
 
 <IfModule unixd_module>
 #
 # If you wish httpd to run as a different user or group, you must run
-# httpd as root initially and it will switch.  
+# httpd as root initially and it will switch.
 #
 # User/Group: The name (or #number) of the user/group to run httpd as.
 # It is usually good practice to create a dedicated user and group for
 # running httpd, as with most system services.
 #
-User www
-Group www
+User ${APACHE_RUN_USER}
+Group ${APACHE_RUN_GROUP}
 
 </IfModule>
 
@@ -202,7 +243,7 @@ Group www
 # e-mailed.  This address appears on some server-generated pages, such
 # as error documents.  e.g. admin@your-domain.com
 #
-ServerAdmin root@localhost
+ServerAdmin {{ salt['pillar.get']('apache:serveradmin', '"root@localhost"') }}
 
 #
 # ServerName gives the name and port that the server uses to identify itself.
@@ -212,10 +253,13 @@ ServerAdmin root@localhost
 # If your host doesn't have a registered DNS name, enter its IP address here.
 #
 #ServerName www.example.com:80
+{% if salt['pillar.get']('apache:servername', False) -%}
+ServerName {{ salt['pillar.get']('apache:servername') }}
+{% endif %}
 
 #
 # Deny access to the entirety of your server's filesystem. You must
-# explicitly permit access to web content directories in other 
+# explicitly permit access to web content directories in other
 # <Directory> blocks below.
 #
 <Directory />
@@ -235,6 +279,13 @@ ServerAdmin root@localhost
 {%- endfor %}
 
 {% if apache.global_document_root is defined and apache.global_document_root|length > 0 %}
+
+<IfModule env_module>
+{%- for envvar,envvalue in salt['pillar.get']('apache:setenv', {}).items() %}
+SetEnv {{ envvar }} {{ envvalue }}
+{%- endfor %}
+</IfModule>
+
 #
 # DocumentRoot: The directory out of which you will serve your
 # documents. By default, all requests are taken from this directory, but
@@ -270,6 +321,7 @@ DocumentRoot "{{ apache.global_document_root }}"
 </Directory>
 {% endif %}
 
+
 #
 # DirectoryIndex: sets the file that Apache will serve if a directory
 # is requested.
@@ -279,8 +331,8 @@ DocumentRoot "{{ apache.global_document_root }}"
 </IfModule>
 
 #
-# The following lines prevent .htaccess and .htpasswd files from being 
-# viewed by Web clients. 
+# The following lines prevent .htaccess and .htpasswd files from being
+# viewed by Web clients.
 #
 <Files ".ht*">
     Require all denied
@@ -293,7 +345,7 @@ DocumentRoot "{{ apache.global_document_root }}"
 # logged here.  If you *do* define an error logfile for a <VirtualHost>
 # container, that host's errors will be logged there and not here.
 #
-ErrorLog "/var/log/httpd-error.log"
+ErrorLog {{ salt['pillar.get']('apache:errorlog', '/var/log/apache/httpd-error.log') }}
 
 #
 # LogLevel: Control the number of messages logged to the error_log.
@@ -307,8 +359,15 @@ LogLevel warn
     # The following directives define some format nicknames for use with
     # a CustomLog directive (see below).
     #
+    LogFormat "%v:%p %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
     LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
     LogFormat "%h %l %u %t \"%r\" %>s %b" common
+    LogFormat "%{Referer}i -> %U" referer
+    LogFormat "%{User-agent}i" agent
+    {%- for log_format in salt['pillar.get']('apache:log_formats', []) %}
+    LogFormat {{ log_format }}
+    {%- endfor %}
+
 
     <IfModule logio_module>
       # You need to enable mod_logio.c to use %I and %O
@@ -322,19 +381,21 @@ LogLevel warn
     # define per-<VirtualHost> access logfiles, transactions will be
     # logged therein and *not* in this file.
     #
-    CustomLog "/var/log/httpd-access.log" common
+    {%- set custom_logfile = salt['pillar.get']('apache:custom_log:logfile', "/var/log/apache/httpd-access.log") %}
+    {%- set custom_logtype = salt['pillar.get']('apache:custom_log:logtype', "common") %}
+    CustomLog {{ custom_logfile }} {{ custom_logtype  }}
 
     #
     # If you prefer a logfile with access, agent, and referer information
     # (Combined Logfile Format) you can use the following directive.
     #
-    #CustomLog "/var/log/httpd-access.log" combined
+    #CustomLog "/var/log/apache/httpd-access.log" combined
 </IfModule>
 
 <IfModule alias_module>
     #
-    # Redirect: Allows you to tell clients about documents that used to 
-    # exist in your server's namespace, but do not anymore. The client 
+    # Redirect: Allows you to tell clients about documents that used to
+    # exist in your server's namespace, but do not anymore. The client
     # will make a new request for the document at its new location.
     # Example:
     # Redirect permanent /foo http://www.example.com/bar
@@ -351,7 +412,7 @@ LogLevel warn
     # the filesystem path.
 
     #
-    # ScriptAlias: This controls which directories contain server scripts. 
+    # ScriptAlias: This controls which directories contain server scripts.
     # ScriptAliases are essentially the same as Aliases, except that
     # documents in the target directory are treated as applications and
     # run by the server when requested rather than as documents sent to the
@@ -369,6 +430,13 @@ LogLevel warn
     #
     #Scriptsock cgisock
 </IfModule>
+
+# Safe Sane default
+<Directory "/">
+    AllowOverride None
+    Options None
+    Require all denied
+</Directory>
 
 #
 # "/usr/local/www/apache24/cgi-bin" should be changed to whatever your ScriptAliased
@@ -426,6 +494,11 @@ LogLevel warn
     #
     #AddType text/html .shtml
     #AddOutputFilter INCLUDES .shtml
+
+    # Adding custom handler here
+    {%- for handler in salt['pillar.get']('apache:mime_module:add_handler') %}
+    AddHandler {{ handler }}
+    {%- endfor %}
 </IfModule>
 
 #
@@ -454,10 +527,10 @@ LogLevel warn
 #MaxRanges unlimited
 
 #
-# EnableMMAP and EnableSendfile: On systems that support it, 
+# EnableMMAP and EnableSendfile: On systems that support it,
 # memory-mapping or the sendfile syscall may be used to deliver
 # files.  This usually improves server performance, but must
-# be turned off when serving from networked-mounted 
+# be turned off when serving from networked-mounted
 # filesystems or if support for these functions is otherwise
 # broken on your system.
 # Defaults: EnableMMAP On, EnableSendfile Off
@@ -467,9 +540,9 @@ LogLevel warn
 
 # Supplemental configuration
 #
-# The configuration files in the etc/apache24/extra/ directory can be 
-# included to add extra features or to modify the default configuration of 
-# the server, or you may simply copy their contents here and change as 
+# The configuration files in the etc/apache24/extra/ directory can be
+# included to add extra features or to modify the default configuration of
+# the server, or you may simply copy their contents here and change as
 # necessary.
 
 # Server-pool management (MPM specific)
@@ -519,11 +592,11 @@ SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
 </IfModule>
 
-# Default Values
-ServerTokens Prod
-ServerSignature Off
-TraceEnable Off
-# Well, IncludeOptional behaved lile Include
+# Secure Default Values
+ServerTokens {{ salt['pillar.get']('apache:security:ServerTokens', 'Prod') }}
+ServerSignature {{ salt['pillar.get']('apache:security:ServerSignature', 'Off') }}
+TraceEnable {{ salt['pillar.get']('apache:security:TraceEnable', 'Off') }}
+# IncludeOptional behaves like Include, but won't bail if the file isn't there.
 IncludeOptional etc/apache24/extra/security.con[f]
 
 {% if salt['pillar.get']('apache:mod_ssl:manage_tls_defaults', False) -%}
@@ -531,4 +604,3 @@ Include etc/apache24/extra/tls-defaults.conf
 {%- endif %}
 
 Include etc/apache24/Includes/*.conf
-

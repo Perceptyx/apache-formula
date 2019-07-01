@@ -57,6 +57,7 @@
         'mod_wsgi': 'mod_wsgi',
         'conf_mod_wsgi': '/etc/httpd/conf.d/wsgi.conf',
         'mod_php5': 'php',
+        'mod_fcgid': 'mod_fcgid',
         'mod_pagespeed_source': 'https://dl-ssl.google.com/dl/linux/direct/mod-pagespeed-stable_current_x86_64.rpm',
 
         'vhostdir': '/etc/httpd/vhosts.d',
@@ -94,21 +95,25 @@
         'user': 'www',
         'group': 'www',
         'configfile': '/usr/local/etc/apache24/httpd.conf',
-        'portsfile': '/usr/local/etc/apache24/ports.conf',
 
-        'mod_php5': 'mod_php56',
+        'mod_php5': 'mod_php72',
         'mod_perl2': 'ap24-mod_perl2',
-        'mod_wsgi': 'ap24-mod_wsgi3',
+        'mod_wsgi': 'ap24-py36-mod_wsgi4',
+        'mod_xsendfile': 'ap24-mod_xsendfile',
+        'mod_fcgid': 'ap24-mod_fcgid',
+        'mod_pagespeed': 'ap24-mod_pagespeed',
+        'mod_xsendfile': 'ap24-mod_xsendfile',
+        'mod_fastcgi': 'ap24-mod_fastcgi',
 
         'vhostdir': '/usr/local/etc/apache24/Includes',
         'confdir': '/usr/local/etc/apache24/extra',
         'modulesdir': '/usr/local/etc/apache24/modules.d',
         'global_document_root': '/usr/local/www/apache24/data',
 
-        'confext': '',
+        'confext': '.conf',
         'default_site': 'default',
         'default_site_ssl': 'default-ssl',
-        'logdir': '/var/log/',
+        'logdir': '/var/log/apache',
         'wwwdir': '/usr/local/www/apache24/',
     },
     'Arch': {
@@ -203,4 +208,3 @@
 
 {# merge the os family/codename mod_sec's specific data over the defaults #}
 {% do apache.update({ 'mod_security': modsecurity }) %}
-
