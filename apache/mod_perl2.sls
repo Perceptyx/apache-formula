@@ -11,12 +11,22 @@ mod-perl2:
       - pkg: apache
 
 {% if grains['os_family']=="Debian" %}
-a2enmod perl2:
+a2enmod {{ apache.mod_perl_name }}:
   cmd.run:
-    - unless: ls /etc/apache2/mods-enabled/perl2.load
+    - unless: ls /etc/apache2/mods-enabled/{{ apache.mod_perl_name }}.load
     - order: 225
     - require:
       - pkg: mod-perl2
+    - watch_in:
+      - module: apache-restart
+
+{{ apache.modulesdir }}/{{ apache.mod_perl_name }}.conf:
+  file.managed:
+    - source: salt://apache/files/{{ salt['grains.get']('os_family') }}/conf-available/perl.conf.jinja
+    - mode: 644
+    - template: jinja
+    - require:
+      - pkg: apache
     - watch_in:
       - module: apache-restart
 
