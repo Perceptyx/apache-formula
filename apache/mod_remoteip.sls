@@ -5,8 +5,9 @@
 include:
   - apache
 
-a2enmod remoteip:
+a2enmod mod_remoteip:
   cmd.run:
+    - name: a2enmod remoteip
     - unless: ls /etc/apache2/mods-enabled/remoteip.load
     - order: 255
     - require:
