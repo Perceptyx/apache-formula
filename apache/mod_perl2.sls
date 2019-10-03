@@ -20,7 +20,7 @@ a2enmod {{ apache.mod_perl_name }}:
     - watch_in:
       - module: apache-restart
 
-{{ apache.modulesdir }}/{{ apache.mod_perl_name }}.conf:
+{{ apache.confdir }}/{{ apache.mod_perl_name }}.conf:
   file.managed:
     - source: salt://apache/files/{{ salt['grains.get']('os_family') }}/conf-available/perl.conf.jinja
     - mode: 644
