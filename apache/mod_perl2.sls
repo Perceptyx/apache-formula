@@ -37,6 +37,7 @@ a2enconf {{ apache.mod_perl_name }}:
     - order: 255
     - require:
       - pkg: apache
+      - file: {{ apache.confdir }}/{{ apache.mod_perl_name }}.conf
     - watch_in:
       - module: apache-reload
 {% elif grains['os_family']=="FreeBSD" %}
