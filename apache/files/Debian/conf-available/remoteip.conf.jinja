@@ -1,4 +1,5 @@
 RemoteIPHeader {{ salt['pillar.get']('apache:mod_remoteip:RemoteIPHeader', 'X-Forwarded-For') }}
-{%- for trusted_proxy in salt['pillar.get']('apache:mod_remoteip:RemoteIPTrustedProxy', []) %}
-RemoteIPTrustedProxy {{ trusted_proxy }}
-{%- endfor %}
+{%- set trusted_proxy = salt['pillar.get']('apache:mod_remoteip:RemoteIPTrustedProxy', []) %}
+{%- if trusted_proxy is defined and trusted_proxy %}
+RemoteIPTrustedProxy {{ trusted_proxy | join(' ') }}
+{%- endif %}
