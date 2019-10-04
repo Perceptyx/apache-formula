@@ -31,6 +31,7 @@ a2enconf remoteip:
     - order: 255
     - require:
       - pkg: apache
+      - file: {{ apache.confdir }}/remoteip.conf
     - watch_in:
       - module: apache-reload
 
