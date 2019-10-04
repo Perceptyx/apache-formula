@@ -226,4 +226,10 @@ IncludeOptional conf-enabled/*.conf
 # Include the virtual host configurations:
 IncludeOptional sites-enabled/*.conf
 
+<IfModule env_module>
+{%- for envvar,envvalue in salt['pillar.get']('apache:setenv', {}).items() %}
+SetEnv {{ envvar }} {{ envvalue }}
+{%- endfor %}
+</IfModule>
+
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
