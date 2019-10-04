@@ -15,15 +15,6 @@ a2enmod mod_remoteip:
     - watch_in:
       - module: apache-restart
 
-a2enconf remoteip:
-  cmd.run:
-    - unless: ls /etc/apache2/mods-enabled/remoteip.load
-    - order: 255
-    - require:
-      - pkg: apache
-    - watch_in:
-      - module: apache-reload
-
 /etc/apache2/conf-available/remoteip.conf:
   file.managed:
     - template: jinja
@@ -33,6 +24,15 @@ a2enconf remoteip:
       - pkg: apache
     - watch_in:
       - service: apache
+
+a2enconf remoteip:
+  cmd.run:
+    - unless: ls /etc/apache2/conf-enabled/remoteip.conf
+    - order: 255
+    - require:
+      - pkg: apache
+    - watch_in:
+      - module: apache-reload
 
 {% elif grains['os_family']=="RedHat" %}
 
@@ -56,7 +56,7 @@ include:
 
 {{ apache.modulesdir }}/050_mod_remoteip.conf:
   file.managed:
-    - source: 
+    - source:
       - salt://apache/files/{{ salt['grains.get']('os_family') }}/mod_remoteip.conf.jinja
     - mode: 644
     - template: jinja

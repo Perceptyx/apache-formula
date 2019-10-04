@@ -31,6 +31,14 @@ a2enmod mod_{{ apache.mod_perl_name }}:
     - watch_in:
       - module: apache-restart
 
+a2enconf {{ apache.mod_perl_name }}:
+  cmd.run:
+    - unless: ls {{ apache.confdir }}/conf-enabled/{{ apache.mod_perl_name }}.conf
+    - order: 255
+    - require:
+      - pkg: apache
+    - watch_in:
+      - module: apache-reload
 {% elif grains['os_family']=="FreeBSD" %}
 
 {{ apache.modulesdir }}/260_mod_perl.conf:
