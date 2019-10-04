@@ -14,6 +14,10 @@ a2enmod {{ module }}:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 {% endfor %}
 
 {% for module in salt['pillar.get']('apache:modules:disabled', []) %}
@@ -25,6 +29,10 @@ a2dismod -f {{ module }}:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 {% endfor %}
 
 {% elif grains['os_family']=="RedHat" %}
