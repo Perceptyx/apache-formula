@@ -14,6 +14,10 @@ a2enmod mod_remoteip:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 /etc/apache2/conf-available/remoteip.conf:
   file.managed:
@@ -23,6 +27,10 @@ a2enmod mod_remoteip:
     - require:
       - pkg: apache
     - watch_in:
+      - service: apache
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
       - service: apache
 
 a2enconf remoteip:
@@ -34,6 +42,10 @@ a2enconf remoteip:
       - file: {{ apache.confdir }}/remoteip.conf
     - watch_in:
       - module: apache-reload
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 {% elif grains['os_family']=="RedHat" %}
 

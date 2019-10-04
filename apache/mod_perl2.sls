@@ -20,6 +20,10 @@ a2enmod mod_{{ apache.mod_perl_name }}:
       - pkg: mod-perl2
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 {{ apache.confdir }}/{{ apache.mod_perl_name }}.conf:
   file.managed:
@@ -30,6 +34,10 @@ a2enmod mod_{{ apache.mod_perl_name }}:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 a2enconf {{ apache.mod_perl_name }}:
   cmd.run:
@@ -40,6 +48,10 @@ a2enconf {{ apache.mod_perl_name }}:
       - file: {{ apache.confdir }}/{{ apache.mod_perl_name }}.conf
     - watch_in:
       - module: apache-reload
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 {% elif grains['os_family']=="FreeBSD" %}
 
 {{ apache.modulesdir }}/260_mod_perl.conf:

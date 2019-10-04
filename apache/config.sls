@@ -12,6 +12,10 @@ include:
       - pkg: apache
     - watch_in:
       - service: apache
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
     - context:
       apache: {{ apache }}
 
@@ -21,6 +25,10 @@ include:
     - require:
       - pkg: apache
     - watch_in:
+      - service: apache
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
       - service: apache
 
 {% if grains['os_family']=="Debian" %}
@@ -33,6 +41,10 @@ include:
       - pkg: apache
     - watch_in:
       - service: apache
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 {{ apache.portsfile }}:
   file.managed:
@@ -42,6 +54,10 @@ include:
     - require:
       - pkg: apache
     - watch_in:
+      - service: apache
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
       - service: apache
     - context:
       apache: {{ apache }}
