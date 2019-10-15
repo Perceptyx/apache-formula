@@ -232,4 +232,11 @@ SetEnv {{ envvar }} {{ envvalue }}
 {%- endfor %}
 </IfModule>
 
+<IfModule mime_module>
+# Adding custom handler here
+{%- for handler in salt['pillar.get']('apache:mime_module:add_handler') %}
+AddHandler {{ handler }}
+{%- endfor %}
+</IfModule>
+
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
