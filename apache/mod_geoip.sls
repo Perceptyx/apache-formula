@@ -1,6 +1,6 @@
 {% from "apache/map.jinja" import apache with context %}
 
-{% if grains['os_family']=="RedHat" %}
+{% if 'mod_geoip' in apache %}
 
 include:
   - apache
@@ -8,21 +8,26 @@ include:
 mod-geoip:
   pkg.installed:
     - pkgs:
-      - GeoIP
-      - mod_geoip
+      - {{ apache.mod_geoip }}
+      - {{ apache.mod_geoip_database }}
     - require:
       - pkg: apache
-
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
+
+{% if grains['os_family']=="RedHat" %}
 geoip conf:
   file.managed:
     - name: {{ apache.confdir }}/geoip.conf
     - user: root
     - group: root
     - mode: 644
-    - source: 
+    - source:
       - salt://apache/files/{{ salt['grains.get']('os_family') }}/geoip.conf
 
 geoip database:
@@ -35,4 +40,4 @@ geoip database:
       - salt://apache/files/{{ salt['grains.get']('os_family') }}/GeoIP.dat
 
 {% endif %}
-
+{% endif %}

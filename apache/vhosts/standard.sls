@@ -4,11 +4,10 @@ include:
   - apache
 
 {% for id, site in salt['pillar.get']('apache:sites', {}).items() %}
-{% set documentroot = site.get('DocumentRoot', '{0}/{1}'.format(apache.wwwdir, id)) %}
+{% set documentroot = site.get('DocumentRoot', '{0}/{1}'.format(apache.wwwdir, site.get('ServerName', id))) %}
 
-{{ id }}:
-  file:
-    - managed
+apache_vhosts_{{ id }}:
+  file.managed:
     - name: {{ apache.vhostdir }}/{{ id }}{{ apache.confext }}
     - source: {{ site.get('template_file', 'salt://apache/vhosts/standard.tmpl') }}
     - template: {{ site.get('template_engine', 'jinja') }}
@@ -20,13 +19,18 @@ include:
       - pkg: apache
     - watch_in:
       - module: apache-reload
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 {% if site.get('DocumentRoot') != False %}
 {{ id }}-documentroot:
   file.directory:
-    - unless: test -d {{ documentroot }}
     - name: {{ documentroot }}
     - makedirs: True
+    - user: {{ site.get('DocumentRootUser', apache.get('document_root_user'))|json }}
+    - group: {{ site.get('DocumentRootGroup', apache.get('document_root_group'))|json }}
     - allow_symlink: True
 {% endif %}
 
@@ -39,6 +43,10 @@ a2ensite {{ id }}{{ apache.confext }}:
       - file: /etc/apache2/sites-available/{{ id }}{{ apache.confext }}
     - watch_in:
       - module: apache-reload
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 {% else %}
 a2dissite {{ id }}{{ apache.confext }}:
   cmd.run:
@@ -47,6 +55,10 @@ a2dissite {{ id }}{{ apache.confext }}:
       - file: /etc/apache2/sites-available/{{ id }}{{ apache.confext }}
     - watch_in:
       - module: apache-reload
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 {% endif %}
 {% endif %}
 

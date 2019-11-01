@@ -14,6 +14,18 @@ a2enmod mod_ssl:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
+
+/etc/apache2/mods-available/ssl.conf:
+  file.managed:
+    - source: salt://apache/files/{{ salt['grains.get']('os_family') }}/ssl.conf.jinja
+    - template: jinja
+    - mode: 644
+    - watch_in:
+      - module: apache-restart
 
 {% elif grains['os_family']=="RedHat" %}
 
@@ -24,6 +36,21 @@ mod_ssl:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
+
+{{ apache.confdir }}/ssl.conf:
+  file.absent:
+    - require:
+      - pkg: apache
+    - watch_in:
+      - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 {% elif grains['os_family']=="FreeBSD" %}
 
@@ -40,6 +67,10 @@ include:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 {% endif %}
 
@@ -56,6 +87,10 @@ include:
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 
 {% if grains['os_family']=="Debian" %}
 a2endisconf tls-defaults:
@@ -73,4 +108,8 @@ a2endisconf tls-defaults:
       - file: {{ apache.confdir }}/tls-defaults.conf
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 {% endif %}

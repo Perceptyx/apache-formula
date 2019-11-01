@@ -12,6 +12,10 @@
       - pkg: apache
     - watch_in:
       - module: apache-restart
+    - require_in:
+      - module: apache-restart
+      - module: apache-reload
+      - service: apache
 {%- endmacro %}
 
 include:
@@ -19,9 +23,8 @@ include:
 
 {% if grains['os_family']=="Debian" %}
 
-{% if salt['file.file_exists' ]('/etc/apache2/conf-available/security.conf') %}
 {{ security_config('/etc/apache2/conf-available/security.conf') }}
-{% endif %}
+    - onlyif: test -f '/etc/apache2/conf-available/security.conf'
 
 {% elif grains['os_family']=="FreeBSD" %}
 {{ security_config(apache.confdir+'/security.conf') }}
