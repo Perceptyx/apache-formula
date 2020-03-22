@@ -31,11 +31,11 @@
 # MaxConnectionsPerChild: maximum number of connections a server process serves
 #                         before terminating
 <IfModule mpm_prefork_module>
-    StartServers {{ mpm_param['start_servers'] | d('5') }}
-    MinSpareServers {{ mpm_param['min_spare_servers'] | d('5') }}
-    MaxSpareServers {{ mpm_param['max_spare_servers'] | d('10') }}
-    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d('250') }}
-    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d('0') }}
+    StartServers {{ mpm_param['start_servers'] | d(5) }}
+    MinSpareServers {{ mpm_param['min_spare_servers'] | d(5) }}
+    MaxSpareServers {{ mpm_param['max_spare_servers'] | d(10) }}
+    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d(250) }}
+    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d(0) }}
 </IfModule>
 
 # worker MPM
@@ -47,12 +47,12 @@
 # MaxConnectionsPerChild: maximum number of connections a server process serves
 #                         before terminating
 <IfModule mpm_worker_module>
-    StartServers {{ mpm_param['start_servers'] | d('3') }}
-    MinSpareThreads {{ mpm_param['min_spare_threads'] | d('75') }}
-    MaxSpareThreads {{ mpm_param['max_spare_threads'] | d('250') }}
-    ThreadsPerChild {{ mpm_param['threads_per_child'] | d('25') }}
-    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d('400') }}
-    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d('0') }}
+    StartServers {{ mpm_param['start_servers'] | d(3) }}
+    MinSpareThreads {{ mpm_param['min_spare_threads'] | d(75) }}
+    MaxSpareThreads {{ mpm_param['max_spare_threads'] | d(250) }}
+    ThreadsPerChild {{ mpm_param['threads_per_child'] | d(25) }}
+    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d(400) }}
+    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d(0) }}
 </IfModule>
 
 # event MPM
@@ -64,13 +64,13 @@
 # MaxConnectionsPerChild: maximum number of connections a server process serves
 #                         before terminating
 <IfModule mpm_event_module>
-    StartServers {{ mpm_param['start_servers'] | d('3') }}
-    MinSpareThreads {{ mpm_param['min_spare_threads'] | d('75') }}
-    MaxSpareThreads {{ mpm_param['max_spare_threads'] | d('250') }}
-    ThreadLimit {{ mpm_param['thread_limit'] | d('64') }}
-    ThreadsPerChild {{ mpm_param['threads_per_child'] | d('25') }}
-    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d('400') }}
-    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d('0') }}
+    StartServers {{ mpm_param['start_servers'] | d(3) }}
+    MinSpareThreads {{ mpm_param['min_spare_threads'] | d(75) }}
+    MaxSpareThreads {{ mpm_param['max_spare_threads'] | d(250) }}
+    ThreadLimit {{ mpm_param['thread_limit'] | d(64) }}
+    ThreadsPerChild {{ mpm_param['threads_per_child'] | d(25) }}
+    MaxRequestWorkers {{ mpm_param['max_request_workers'] | d(400) }}
+    MaxConnectionsPerChild {{ mpm_param['max_connections_per_child'] | d(0) }}
 </IfModule>
 
 # The maximum number of free Kbytes that every allocator is allowed
