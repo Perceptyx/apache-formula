@@ -267,6 +267,11 @@ ServerName {{ salt['pillar.get']('apache:servername') }}
     Require all denied
 </Directory>
 
+# GZIP support
+{%- for addoutputfilterbytype,type in salt['pillar.get']('apache:gzip', {}).items() %}
+AddOutputFilterByType {{ addoutputfilterbytype }} {{ type }}
+{%- endfor %}
+
 #
 # Note that from this point forward you must specifically allow
 # particular features to be enabled - so if something's not working as
