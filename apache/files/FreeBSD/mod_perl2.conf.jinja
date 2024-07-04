@@ -10,9 +10,9 @@ LoadModule perl_module libexec/{{ apache.service }}/mod_perl.so
 
 <IfModule mod_perl.c>
   {%- for directive, dvalue in salt['pillar.get']('apache:mod_perl2', {}).items() %}
-  {%- if var is iterable and (var is not string and var is not mapping) %}
+  {%- if dvalue is iterable and (dvalue is not string and dvalue is not mapping) %}
   {%- for mdvalue in dvalue %}
-  {{ directive }} {{ mddvalue }}
+  {{ directive }} {{ mdvalue }}
   {%- endfor %}
   {%- else %}
   {{ directive }} {{ dvalue }}
